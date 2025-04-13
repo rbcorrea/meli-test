@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: url-shortener
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - redis
+      - rabbitmq
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - REDIS_ADDR=redis:6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672" # management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  # otel-collector:
+  #   image: otel/opentelemetry-collector:latest
+  #   container_name: otel-collector
+  #   command: ["--config=/etc/otel/config.yaml"]
+  #   volumes:
+  #     - ./otel-config.yaml:/etc/otel/config.yaml
+  #   ports:
+  #     - "4317:4317"   # OTLP gRPC
+  #     - "4318:4318"   # OTLP HTTP
+  #   restart: unless-stopped
+
+volumes:
+  mongo_data:
