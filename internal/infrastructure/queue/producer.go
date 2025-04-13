@@ -8,6 +8,7 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rbcorrea/meli-test/internal/domain/entity"
+	"github.com/rbcorrea/meli-test/internal/domain/interfaces"
 	"github.com/rbcorrea/meli-test/internal/settings"
 	"github.com/rs/zerolog/log"
 )
@@ -17,6 +18,8 @@ type Producer struct {
 	channel *amqp.Channel
 	queue   amqp.Queue
 }
+
+var _ interfaces.Producer = (*Producer)(nil)
 
 func NewProducer(cfg *settings.Config) (*Producer, error) {
 	conn, err := amqp.Dial(cfg.RabbitMQURL)
