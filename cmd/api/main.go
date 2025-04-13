@@ -28,9 +28,14 @@ func main() {
 	mongoDatabase := client.Database("url_shortener")
 	mongoRepo := repository.NewMongoRepository(mongoDatabase)
 
+	producer, err := queue.NewProducer(cfg)
+	if err != nil {
+		log.Fatalf("Failed to initialize producer: %v", err)
+	}
+
 	_ = queue.StartConsumer(cfg.RabbitMQURL, mongoRepo, redis)
 
-	app := api.NewApp()
+	app := api.NewApp(mongoRepo, producer)
 
 	log.Fatal(app.Listen(":8080"))
 }

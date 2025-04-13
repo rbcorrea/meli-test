@@ -33,18 +33,6 @@ func (r *MongoRepository) FindByCode(ctx context.Context, code string) (*entity.
 	return &result, nil
 }
 
-// func (r *MongoRepository) UpdateAccessData(ctx context.Context, code string, accessed int64, lastAccess time.Time) error {
-// 	_, err := r.Collection.UpdateOne(
-// 		ctx,
-// 		bson.M{"code": code},
-// 		bson.M{"$set": bson.M{
-// 			"accessed":    accessed,
-// 			"last_access": lastAccess,
-// 		}},
-// 	)
-// 	return err
-// }
-
 func (r *MongoRepository) DeactivateByCode(ctx context.Context, code string) error {
 	_, err := r.Collection.UpdateOne(
 		ctx,

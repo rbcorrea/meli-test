@@ -1,11 +1,8 @@
 package handler
 
 import (
-	"context"
-
-	"github.com/rbcorrea/meli-test/internal/infrastructure/queue"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/rbcorrea/meli-test/internal/domain/interfaces"
 )
 
 type shortenRequest struct {
@@ -17,16 +14,7 @@ type shortenResponse struct {
 	ShortURL    string `json:"short_url"`
 }
 
-type ShortenURLUseCase interface {
-	Execute(ctx context.Context, url string) (ShortenedURL, error)
-}
-
-type ShortenedURL struct {
-	OriginalURL string
-	Code        string
-}
-
-func ShortenURL(producer *queue.Producer, shortenURLUseCase ShortenURLUseCase) fiber.Handler {
+func ShortenURL(shortenURLUseCase interfaces.ShortenURLUseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req shortenRequest
 
@@ -50,7 +38,7 @@ func ShortenURL(producer *queue.Producer, shortenURLUseCase ShortenURLUseCase) f
 		}
 
 		return c.Status(fiber.StatusOK).JSON(shortenResponse{
-			OriginalURL: shortURL.OriginalURL,
+			OriginalURL: shortURL.Original,
 			ShortURL:    "https://me.li/" + shortURL.Code,
 		})
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rbcorrea/meli-test/internal/domain/entity"
+	"github.com/rbcorrea/meli-test/internal/domain/interfaces"
 	"github.com/rbcorrea/meli-test/internal/infrastructure/queue"
 )
 
@@ -14,12 +15,13 @@ type ShortenURLUseCase struct {
 	Producer queue.Producer
 }
 
-func NewShortenURLUseCase(producer queue.Producer) *ShortenURLUseCase {
+func NewShortenURLUseCase(producer queue.Producer) interfaces.ShortenURLUseCase {
 	return &ShortenURLUseCase{
 		Producer: producer,
 	}
 }
-func GenerateCode(n int) string {
+
+func generateCode(n int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	code := make([]byte, n)
@@ -30,7 +32,7 @@ func GenerateCode(n int) string {
 }
 
 func (u *ShortenURLUseCase) Execute(ctx context.Context, originalURL string) (*entity.ShortURL, error) {
-	code := GenerateCode(6)
+	code := generateCode(6)
 	shortURL := entity.NewShortURL(originalURL, code)
 
 	err := u.Producer.PublishShortenURL(ctx, shortURL)

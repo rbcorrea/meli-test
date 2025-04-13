@@ -1,26 +1,26 @@
 package handler
 
 import (
-	"context"
-
-	"github.com/rbcorrea/meli-test/internal/infrastructure/cache"
-	"github.com/rbcorrea/meli-test/internal/infrastructure/repository"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/rbcorrea/meli-test/internal/domain/interfaces"
 )
 
-func ResolveShortURL(redis cache.CacheClient, mongo *repository.MongoRepository) fiber.Handler {
+func ResolveShortURL(resolveURLUseCase interfaces.ResolveURLUseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		code := c.Params("code")
-
-		url, err := redis.Get(context.TODO(), code)
-		if err != nil {
-			url, err = mongo.FindByCode(c.Context(), code)
-			if err != nil {
-				return c.SendStatus(fiber.StatusNotFound)
-			}
-			_ = redis.Set(context.TODO(), code, url)
+		if code == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "code is required",
+			})
 		}
-		return c.Redirect(url, fiber.StatusFound)
+
+		shortURL, err := resolveURLUseCase.Execute(c.Context(), code)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "URL not found",
+			})
+		}
+
+		return c.Redirect(shortURL.Original, fiber.StatusFound)
 	}
 }

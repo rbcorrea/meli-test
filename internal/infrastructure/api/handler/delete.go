@@ -1,20 +1,25 @@
 package handler
 
 import (
-	"context"
-
-	"github.com/rbcorrea/meli-test/internal/infrastructure/cache"
-	"github.com/rbcorrea/meli-test/internal/infrastructure/repository"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/rbcorrea/meli-test/internal/domain/interfaces"
 )
 
-func DeleteURL(redis *cache.Client, mongo *repository.MongoRepository) fiber.Handler {
+func DeleteURL(deleteURLUseCase interfaces.DeleteURLUseCase) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		code := c.Params("code")
+		if code == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "code is required",
+			})
+		}
 
-		_ = redis.Delete(context.TODO(), code)
-		_ = mongo.DeactivateByCode(c.Context(), code)
+		err := deleteURLUseCase.Execute(c.Context(), code)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to delete URL",
+			})
+		}
 
 		return c.SendStatus(fiber.StatusNoContent)
 	}

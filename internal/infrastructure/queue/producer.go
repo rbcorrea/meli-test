@@ -7,6 +7,7 @@ import (
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/rbcorrea/meli-test/internal/domain/entity"
 	"github.com/rbcorrea/meli-test/internal/settings"
 	"github.com/rs/zerolog/log"
 )
@@ -52,7 +53,7 @@ func NewProducer(cfg *settings.Config) (*Producer, error) {
 	}, nil
 }
 
-func (p *Producer) PublishShortenURL(ctx context.Context, message interface{}) error {
+func (p *Producer) PublishShortenURL(ctx context.Context, message *entity.ShortURL) error {
 	body, err := json.Marshal(message)
 	if err != nil {
 		log.Error().Err(err).Msg("Error marshalling message")
